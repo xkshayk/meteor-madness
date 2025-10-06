@@ -1,5 +1,98 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+
+const AsteroidModel3D = ({ modelPath, asteroidName }) => {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    
+    const container = containerRef.current;
+    const size = 192;
+    renderer.setSize(size, size);
+    renderer.setClearColor(0x000000, 0);
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    camera.position.z = 2;
+
+    // Load OBJ model
+    const loader = new OBJLoader();
+    let asteroidModel;
+
+    loader.load(
+      modelPath,
+      (object) => {
+        asteroidModel = object;
+        
+        // Scale and position the model
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 1.5 / maxDim;
+        object.scale.set(scale, scale, scale);
+        
+        // Center the model
+        const center = box.getCenter(new THREE.Vector3());
+        object.position.sub(center.multiplyScalar(scale));
+        
+        // Apply material
+        object.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.material = new THREE.MeshPhongMaterial({
+              color: 0x888888,
+              shininess: 10
+            });
+          }
+        });
+        
+        scene.add(object);
+      },
+      undefined,
+      (error) => {
+        console.error('Error loading asteroid model:', error);
+      }
+    );
+
+    // Animation
+    const animate = () => {
+      requestAnimationFrame(animate);
+      if (asteroidModel) {
+        asteroidModel.rotation.y += 0.01;
+      }
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Cleanup
+    return () => {
+      container.removeChild(renderer.domElement);
+      renderer.dispose();
+    };
+  }, [modelPath]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="mx-auto mb-4 flex items-center justify-center"
+      style={{ width: '192px', height: '192px' }}
+    />
+  );
+};
 
 const AsteroidDetail = () => {
   const navigate = useNavigate();
@@ -64,9 +157,9 @@ const AsteroidDetail = () => {
 
   // Calculate risk assessment
   const getRiskAssessment = () => {
-    const closeDistance = asteroid.distance < 10000000; // < 10M km
     const largeSize = asteroid.diameter > 1; // > 1 km
-    const highVelocity = asteroid.velocity > 90000; // > 90,000 km/h
+    const highVelocity = asteroid.velocity > 25; // > 25 km/s
+    const nearTermImpact = asteroid.predictedImpactPeriod && !asteroid.predictedImpactPeriod.includes('-') && parseInt(asteroid.predictedImpactPeriod) < 2100;
     
     if (asteroid.isPotentiallyHazardous) {
       return {
@@ -78,19 +171,15 @@ const AsteroidDetail = () => {
           largeSize 
             ? `With a diameter of ${asteroid.diameter} km, an impact would cause regional to global devastation.` 
             : 'While smaller in size, its orbit brings it dangerously close to Earth.'
-        } ${
-          closeDistance 
-            ? `Its close approach distance of ${(asteroid.distance / 1000000).toFixed(1)} million km means it passes within the "threat zone."` 
-            : 'However, current orbital calculations show it will maintain a safe distance during upcoming approaches.'
-        } Continuous monitoring is essential to track any orbital changes.`
+        } Predicted impact period: ${asteroid.predictedImpactPeriod}. Continuous monitoring is essential to track any orbital changes.`
       };
-    } else if (closeDistance && largeSize) {
+    } else if (largeSize) {
       return {
         level: 'MODERATE RISK',
         color: 'text-yellow-500',
         bgColor: 'bg-yellow-900',
         borderColor: 'border-yellow-700',
-        summary: `While not currently classified as potentially hazardous, ${asteroid.nickname} warrants attention. Its ${asteroid.diameter} km diameter makes it large enough to cause significant damage, and its relatively close approach distance of ${(asteroid.distance / 1000000).toFixed(1)} million km means its orbit intersects Earth's neighborhood. However, precise orbital calculations indicate no immediate threat. Scientists continue to refine its trajectory with each observation.`
+        summary: `While not currently classified as potentially hazardous, ${asteroid.nickname} warrants attention. Its ${asteroid.diameter} km diameter makes it large enough to cause significant damage. Predicted impact period: ${asteroid.predictedImpactPeriod}. However, precise orbital calculations indicate no immediate threat. Scientists continue to refine its trajectory with each observation.`
       };
     } else {
       return {
@@ -98,15 +187,7 @@ const AsteroidDetail = () => {
         color: 'text-green-500',
         bgColor: 'bg-green-900',
         borderColor: 'border-green-700',
-        summary: `${asteroid.nickname} poses minimal threat to Earth. ${
-          !largeSize 
-            ? `At ${asteroid.diameter} km in diameter, even a direct impact would cause only localized damage.` 
-            : 'Despite its considerable size, '
-        }${
-          !closeDistance 
-            ? ` Its orbital path keeps it at a safe distance of ${(asteroid.distance / 1000000).toFixed(1)} million km from Earth.` 
-            : ' its trajectory is well-understood and predictable.'
-        } This asteroid is an excellent target for scientific study without posing a danger to our planet.`
+        summary: `${asteroid.nickname} poses minimal threat to Earth. At ${asteroid.diameter} km in diameter, even a direct impact would cause only localized damage. Predicted impact period: ${asteroid.predictedImpactPeriod}. Its trajectory is well-understood and predictable. This asteroid is an excellent target for scientific study without posing a danger to our planet.`
       };
     }
   };
@@ -120,7 +201,31 @@ const AsteroidDetail = () => {
       content: (
         <div className="space-y-6">
           <div className="text-center mb-8">
-            <div className="text-8xl mb-4">☄️</div>
+            {asteroid.id === '29075' ? (
+              <AsteroidModel3D 
+                modelPath="/models/1950 DA Prograde.obj" 
+                asteroidName="1950 DA"
+              />
+            ) : asteroid.id === '101955' ? (
+              <AsteroidModel3D 
+                modelPath="/models/Bennu_v20_200k.obj" 
+                asteroidName="Bennu"
+              />
+            ) : asteroid.isPotentiallyHazardous ? (
+              <div className="text-8xl mb-4">
+                ☄️
+              </div>
+            ) : (
+              <img 
+                src="/Animation-Asteroid-Rotating.gif" 
+                alt="Rotating Asteroid" 
+                className="w-48 h-48 mx-auto mb-4 object-contain"
+                style={{
+                  filter: 'brightness(1.5) contrast(1.2)',
+                  mixBlendMode: 'screen'
+                }}
+              />
+            )}
             <h2 className="text-4xl font-light text-white mb-2">{asteroid.name}</h2>
             <p className="text-xl text-gray-400">({asteroid.nickname})</p>
             {asteroid.isPotentiallyHazardous && (
@@ -141,20 +246,20 @@ const AsteroidDetail = () => {
 
             <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
               <div className="text-gray-400 text-sm mb-2">VELOCITY</div>
-              <div className="text-3xl font-bold text-white">{asteroid.velocity.toLocaleString()}</div>
-              <div className="text-xs text-gray-500 mt-1">km/h relative to Earth</div>
+              <div className="text-3xl font-bold text-white">{asteroid.velocity.toFixed(1)}</div>
+              <div className="text-xs text-gray-500 mt-1">km/s relative to Earth</div>
             </div>
 
             <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-              <div className="text-gray-400 text-sm mb-2">DISTANCE</div>
-              <div className="text-3xl font-bold text-white">{(asteroid.distance / 1000000).toFixed(2)}</div>
-              <div className="text-xs text-gray-500 mt-1">Million kilometers</div>
+              <div className="text-gray-400 text-sm mb-2">ORBITAL PERIOD</div>
+              <div className="text-3xl font-bold text-white">{asteroid.period}</div>
+              <div className="text-xs text-gray-500 mt-1">Years</div>
             </div>
 
             <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-              <div className="text-gray-400 text-sm mb-2">DESIGNATION</div>
-              <div className="text-3xl font-bold text-white">{asteroid.id}</div>
-              <div className="text-xs text-gray-500 mt-1">NASA ID Number</div>
+              <div className="text-gray-400 text-sm mb-2">PREDICTED IMPACT PERIOD</div>
+              <div className="text-3xl font-bold text-white">{asteroid.predictedImpactPeriod}</div>
+              <div className="text-xs text-gray-500 mt-1">Year(s)</div>
             </div>
           </div>
         </div>
@@ -169,13 +274,16 @@ const AsteroidDetail = () => {
             <h3 className="text-xl font-medium text-white mb-4">Size Comparison</h3>
             <div className="space-y-4">
               <div>
-                <div className="text-gray-400 text-sm mb-2">Diameter: {asteroid.diameter} km</div>
+                <div className="text-gray-400 text-sm mb-2">Diameter: {asteroid.diameter} km ({asteroid.diameter * 1000} m)</div>
                 <div className="text-gray-300">
-                  {asteroid.diameter > 10 && '🏔️ Larger than Mount Everest'}
-                  {asteroid.diameter > 5 && asteroid.diameter <= 10 && '🏔️ About the size of a large mountain'}
-                  {asteroid.diameter > 1 && asteroid.diameter <= 5 && '🏙️ Larger than most major cities'}
-                  {asteroid.diameter > 0.5 && asteroid.diameter <= 1 && '🌆 Size of a small city'}
-                  {asteroid.diameter <= 0.5 && '🏢 Several city blocks to small town'}
+                  {asteroid.diameter >= 10 && '🏔️ Larger than Mount Everest'}
+                  {asteroid.diameter >= 5 && asteroid.diameter < 10 && '🏔️ About the size of a large mountain'}
+                  {asteroid.diameter >= 1 && asteroid.diameter < 5 && '🏙️ Larger than most major cities'}
+                  {asteroid.diameter >= 0.5 && asteroid.diameter < 1 && '🌆 Size of a small city'}
+                  {asteroid.diameter >= 0.1 && asteroid.diameter < 0.5 && '🏢 Size of several city blocks'}
+                  {asteroid.diameter >= 0.05 && asteroid.diameter < 0.1 && '🏟️ About the size of a large stadium'}
+                  {asteroid.diameter >= 0.01 && asteroid.diameter < 0.05 && '🏠 Size of a large building or small neighborhood'}
+                  {asteroid.diameter < 0.01 && '🚗 Size of a house or smaller'}
                 </div>
               </div>
             </div>
@@ -186,36 +294,19 @@ const AsteroidDetail = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-400">Orbital Speed:</span>
-                <span className="text-white">{asteroid.velocity.toLocaleString()} km/h</span>
+                <span className="text-white">{asteroid.velocity.toFixed(1)} km/s</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Meters per second:</span>
-                <span className="text-white">{((asteroid.velocity * 1000) / 3600).toFixed(0)} m/s</span>
+                <span className="text-white">{(asteroid.velocity * 1000).toFixed(0)} m/s</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Mach number:</span>
-                <span className="text-white">Mach {((asteroid.velocity * 1000) / 3600 / 343).toFixed(1)}</span>
+                <span className="text-white">Mach {(asteroid.velocity * 1000 / 343).toFixed(1)}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-medium text-white mb-4">Estimated Mass</h3>
-            <div className="text-gray-300">
-              Assuming an average asteroid density of 3,000 kg/m³:
-            </div>
-            <div className="text-3xl font-bold text-white mt-2">
-              {((4/3) * Math.PI * Math.pow((asteroid.diameter / 2) * 1000, 3) * 3000 / 1e12).toExponential(2)} trillion kg
-            </div>
-          </div>
-        </div>
-      )
-    },
-    // Page 2: Risk Assessment
-    {
-      title: 'EARTH IMPACT RISK ASSESSMENT',
-      content: (
-        <div className="space-y-6">
           <div className={`${risk.bgColor} p-6 rounded-lg border ${risk.borderColor}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-2xl font-medium text-white">Risk Level</h3>
@@ -223,54 +314,6 @@ const AsteroidDetail = () => {
             </div>
             <p className="text-gray-300 leading-relaxed">
               {risk.summary}
-            </p>
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-medium text-white mb-4">Impact Potential</h3>
-            <div className="space-y-4">
-              <div>
-                <div className="text-gray-400 text-sm mb-1">Kinetic Energy (if impact occurred)</div>
-                <div className="text-white">
-                  {(() => {
-                    const mass = (4/3) * Math.PI * Math.pow((asteroid.diameter / 2) * 1000, 3) * 3000;
-                    const velocity = (asteroid.velocity * 1000) / 3600;
-                    const energy = 0.5 * mass * Math.pow(velocity, 2);
-                    const megatons = energy / (4.184e15);
-                    return megatons >= 1000 
-                      ? `${(megatons / 1000).toFixed(1)} Gigatons TNT`
-                      : megatons >= 1
-                        ? `${megatons.toFixed(1)} Megatons TNT`
-                        : `${(megatons * 1000).toFixed(1)} Kilotons TNT`;
-                  })()}
-                </div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-sm mb-1">Potential Crater Size</div>
-                <div className="text-white">
-                  ~{(asteroid.diameter * 20).toFixed(1)} km diameter
-                </div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-sm mb-1">Devastation Radius</div>
-                <div className="text-white">
-                  {asteroid.diameter > 10 && 'Global extinction event'}
-                  {asteroid.diameter > 5 && asteroid.diameter <= 10 && 'Continental devastation'}
-                  {asteroid.diameter > 1 && asteroid.diameter <= 5 && 'Regional destruction'}
-                  {asteroid.diameter > 0.5 && asteroid.diameter <= 1 && 'City-wide destruction'}
-                  {asteroid.diameter <= 0.5 && 'Localized damage'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-medium text-white mb-4">Monitoring Status</h3>
-            <p className="text-gray-300">
-              {asteroid.isPotentiallyHazardous 
-                ? `${asteroid.nickname} is actively monitored by NASA's Center for Near-Earth Object Studies (CNEOS). Its orbit is continuously refined with each observation to ensure accurate trajectory predictions.`
-                : `${asteroid.nickname} is catalogued in NASA's Near-Earth Object database. While not considered potentially hazardous, its orbit is periodically updated as part of routine sky surveys.`
-              }
             </p>
           </div>
         </div>
@@ -304,7 +347,7 @@ const AsteroidDetail = () => {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-8 py-4 bg-black bg-opacity-80 border-b border-gray-800">
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/asteroids')}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
           <span>←</span>

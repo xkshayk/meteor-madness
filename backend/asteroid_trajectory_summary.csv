@@ -1,0 +1,41 @@
+Asteroid Name,Trajectory Equation,PHA
+433 Eros,"r(θ)=1.4580(1-0.2229²)/(1+0.2229cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=10.83°, Ω=304.30°, ω=178.64°",No
+99942 Apophis,"r(θ)=0.9220(1-0.1914²)/(1+0.1914cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=3.33°, Ω=204.45°, ω=126.40°",Yes
+101955 Bennu,"r(θ)=1.1260(1-0.2037²)/(1+0.2037cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=6.03°, Ω=2.06°, ω=66.22°",Yes
+1036 Ganymed,"r(θ)=2.6620(1-0.5339²)/(1+0.5339cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=26.38°, Ω=215.51°, ω=132.44°",No
+162173 Ryugu,"r(θ)=1.1900(1-0.1902²)/(1+0.1902cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=5.88°, Ω=251.62°, ω=211.44°",No
+3200 Phaethon,"r(θ)=1.2710(1-0.8898²)/(1+0.8898cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=22.18°, Ω=265.43°, ω=322.15°",Yes
+2062 Aten,"r(θ)=0.9670(1-0.1827²)/(1+0.1827cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=18.93°, Ω=147.23°, ω=106.47°",No
+1862 Apollo,"r(θ)=1.4710(1-0.5598²)/(1+0.5598cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=6.35°, Ω=35.88°, ω=286.05°",No
+4179 Toutatis,"r(θ)=2.5300(1-0.6342²)/(1+0.6342cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=0.47°, Ω=128.24°, ω=274.78°",No
+25143 Itokawa,"r(θ)=1.3240(1-0.2801²)/(1+0.2801cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=1.62°, Ω=69.08°, ω=162.76°",No
+1566 Icarus,"r(θ)=1.0780(1-0.8268²)/(1+0.8268cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=22.83°, Ω=88.00°, ω=31.29°",Yes
+4660 Nereus,"r(θ)=1.4890(1-0.3604²)/(1+0.3604cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=1.43°, Ω=313.49°, ω=160.30°",No
+1620 Geographos,"r(θ)=1.2450(1-0.3356²)/(1+0.3356cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=13.34°, Ω=337.35°, ω=276.76°",Yes
+4769 Castalia,"r(θ)=1.0630(1-0.4831²)/(1+0.4831cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=8.89°, Ω=325.69°, ω=121.26°",No
+6489 Golevka,"r(θ)=2.5000(1-0.6129²)/(1+0.6129cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=2.28°, Ω=2.28°, ω=65.45°",No
+1685 Toro,"r(θ)=1.3670(1-0.4357²)/(1+0.4357cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=9.38°, Ω=274.70°, ω=44.82°",No
+2100 Ra-Shalom,"r(θ)=0.8320(1-0.4364²)/(1+0.4364cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=15.76°, Ω=170.95°, ω=355.77°",Yes
+2063 Bacchus,"r(θ)=1.0780(1-0.3495²)/(1+0.3495cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=9.43°, Ω=33.24°, ω=55.87°",Yes
+3908 Nyx,"r(θ)=1.9260(1-0.4639²)/(1+0.4639cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=2.18°, Ω=140.72°, ω=311.64°",No
+5381 Sekhmet,"r(θ)=0.9180(1-0.4499²)/(1+0.4499cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=19.78°, Ω=152.79°, ω=26.43°",Yes
+5587 Itokawa II,"r(θ)=1.9980(1-0.2195²)/(1+0.2195cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=15.14°, Ω=162.82°, ω=233.45°",No
+6037 Asteroid,"r(θ)=2.2670(1-0.4513²)/(1+0.4513cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=3.76°, Ω=204.59°, ω=13.92°",No
+4034 Vishnu,"r(θ)=1.0610(1-0.4422²)/(1+0.4422cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=11.15°, Ω=104.42°, ω=227.86°",Yes
+1221 Amor,"r(θ)=1.9200(1-0.4350²)/(1+0.4350cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=11.88°, Ω=171.56°, ω=26.65°",No
+3753 Cruithne,"r(θ)=1.0000(1-0.5150²)/(1+0.5150cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=19.81°, Ω=126.33°, ω=43.76°",No
+4183 Cuno,"r(θ)=1.9840(1-0.1508²)/(1+0.1508cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=6.68°, Ω=109.75°, ω=50.67°",No
+5496 Asteroid 1973,"r(θ)=2.3870(1-0.2089²)/(1+0.2089cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=8.24°, Ω=297.14°, ω=129.88°",No
+7341 1991 VK,"r(θ)=1.8660(1-0.4898²)/(1+0.4898cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=14.45°, Ω=76.94°, ω=348.22°",No
+7482 1994 PC1,"r(θ)=1.3500(1-0.3283²)/(1+0.3283cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=33.49°, Ω=117.66°, ω=235.44°",Yes
+8014 1990 MF,"r(θ)=1.6540(1-0.1377²)/(1+0.1377cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=4.12°, Ω=50.23°, ω=102.34°",No
+9162 Kwiila,"r(θ)=2.1740(1-0.5122²)/(1+0.5122cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=7.89°, Ω=252.41°, ω=183.92°",No
+10115 1992 SK,"r(θ)=1.4240(1-0.4467²)/(1+0.4467cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=17.23°, Ω=309.88°, ω=298.45°",No
+16834 1997 WU22,"r(θ)=1.0660(1-0.5544²)/(1+0.5544cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=4.78°, Ω=258.76°, ω=195.33°",Yes
+29075 1950 DA,"r(θ)=1.6980(1-0.5080²)/(1+0.5080cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=12.18°, Ω=356.14°, ω=224.72°",Yes
+35396 1997 XF11,"r(θ)=1.4420(1-0.4839²)/(1+0.4839cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=4.08°, Ω=213.18°, ω=282.90°",Yes
+52760 1998 ML14,"r(θ)=1.2700(1-0.1361²)/(1+0.1361cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=4.63°, Ω=107.51°, ω=19.88°",Yes
+53319 1999 JM8,"r(θ)=2.4320(1-0.1443²)/(1+0.1443cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=13.67°, Ω=205.84°, ω=15.21°",Yes
+65803 Didymos,"r(θ)=1.6440(1-0.3838²)/(1+0.3838cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=3.41°, Ω=73.21°, ω=319.33°",No
+68950 2002 QF15,"r(θ)=1.1210(1-0.3897²)/(1+0.3897cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=3.23°, Ω=350.45°, ω=271.04°",Yes
+99907 1989 VA,"r(θ)=1.0560(1-0.6080²)/(1+0.6080cos(θ)); x=r·cos(θ), y=r·sin(θ); X,Y,Z transformed with i=5.22°, Ω=346.22°, ω=9.37°",Yes

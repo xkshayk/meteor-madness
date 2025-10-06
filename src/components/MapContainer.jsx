@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-const MapContainer = ({ onMapClick, targetLocation, craterInfo }) => {
+const MapContainer = ({ onMapClick, targetLocation, craterInfo, isLaunching }) => {
   const mapRef = useRef(null);
   const googleMapRef = useRef(null);
   const markerRef = useRef(null);
@@ -138,6 +138,7 @@ const MapContainer = ({ onMapClick, targetLocation, craterInfo }) => {
             zoom: 8,
             mapTypeControl: true,
             styles: darkModeStyles,
+            gestureHandling: 'greedy',
           });
 
           googleMapRef.current = map;
@@ -188,6 +189,33 @@ const MapContainer = ({ onMapClick, targetLocation, craterInfo }) => {
     };
   }, [handleMapClick]);
 
+  // Disable map interaction when asteroid is launching
+  useEffect(() => {
+    if (!googleMapRef.current) return;
+
+    const map = googleMapRef.current;
+    
+    if (isLaunching) {
+      // Disable all map interaction
+      map.setOptions({
+        draggable: false,
+        zoomControl: false,
+        scrollwheel: false,
+        disableDoubleClickZoom: true,
+        gestureHandling: 'none',
+      });
+    } else {
+      // Re-enable map interaction
+      map.setOptions({
+        draggable: true,
+        zoomControl: true,
+        scrollwheel: true,
+        disableDoubleClickZoom: false,
+        gestureHandling: 'greedy',
+      });
+    }
+  }, [isLaunching]);
+
   useEffect(() => {
     if (!googleMapRef.current || !window.google) return;
 
@@ -213,88 +241,33 @@ const MapContainer = ({ onMapClick, targetLocation, craterInfo }) => {
     }
   }, [targetLocation]);
 
-  // Handle crater overlay
+  // Handle crater overlay - using Circle like the marker for consistent behavior
   useEffect(() => {
     if (!googleMapRef.current || !window.google) return;
 
-    // Remove existing crater overlay if any
+    // Remove existing crater if any
     if (craterOverlayRef.current) {
       craterOverlayRef.current.setMap(null);
       craterOverlayRef.current = null;
     }
 
-    // Create new crater overlay if craterInfo is provided
+    // Create new crater circle if craterInfo is provided
     if (craterInfo) {
-      class CraterOverlay extends window.google.maps.OverlayView {
-        constructor(position, pixelSize) {
-          super();
-          this.position = position;
-          // Convert pixel size to meters (approximate: 100px = ~100 meters at default zoom)
-          // This is a rough approximation - we'll calculate actual bounds based on meters
-          this.radiusMeters = pixelSize * 1.5; // Scale factor for realistic crater size
-          this.div = null;
-        }
-
-        onAdd() {
-          const div = document.createElement('div');
-          div.style.position = 'absolute';
-          div.style.borderRadius = '50%';
-          div.style.background = 'radial-gradient(circle at 40% 40%, rgba(40, 40, 40, 0.9), rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.8))';
-          div.style.boxShadow = 'inset 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 100px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 100, 0, 0.3)';
-          div.style.pointerEvents = 'none';
-          div.style.border = '3px solid rgba(60, 40, 30, 0.8)';
-          this.div = div;
-
-          const panes = this.getPanes();
-          panes.overlayLayer.appendChild(div);
-        }
-
-        draw() {
-          const projection = this.getProjection();
-          if (!projection || !this.div) return;
-
-          // Calculate crater bounds based on radius in meters
-          // Use google.maps.geometry.spherical.computeOffset to get edge points
-          const map = this.getMap();
-          if (!map || !window.google.maps.geometry) return;
-
-          // Calculate a point at the edge of the crater (to the east)
-          const edgePoint = window.google.maps.geometry.spherical.computeOffset(
-            this.position,
-            this.radiusMeters,
-            90 // heading east
-          );
-
-          // Convert both center and edge to pixel coordinates
-          const centerPixel = projection.fromLatLngToDivPixel(this.position);
-          const edgePixel = projection.fromLatLngToDivPixel(edgePoint);
-
-          if (centerPixel && edgePixel) {
-            // Calculate pixel radius from the distance between center and edge
-            const pixelRadius = Math.abs(edgePixel.x - centerPixel.x);
-            const diameter = pixelRadius * 2;
-
-            this.div.style.left = (centerPixel.x - pixelRadius) + 'px';
-            this.div.style.top = (centerPixel.y - pixelRadius) + 'px';
-            this.div.style.width = diameter + 'px';
-            this.div.style.height = diameter + 'px';
-          }
-        }
-
-        onRemove() {
-          if (this.div) {
-            this.div.parentNode.removeChild(this.div);
-            this.div = null;
-          }
-        }
-      }
-
-      const crater = new CraterOverlay(
-        new window.google.maps.LatLng(craterInfo.lat, craterInfo.lng),
-        craterInfo.size
-      );
-      crater.setMap(googleMapRef.current);
+      // Create crater using google.maps.Circle - same approach as marker
+      const crater = new window.google.maps.Circle({
+        strokeColor: 'rgba(40, 25, 10, 0.95)',
+        strokeOpacity: 0.95,
+        strokeWeight: 4,
+        fillColor: 'rgba(0, 0, 0, 0.9)',
+        fillOpacity: 0.95,
+        map: googleMapRef.current,
+        center: { lat: craterInfo.lat, lng: craterInfo.lng },
+        radius: craterInfo.size * 10, // Convert to meters (size * 10 for visible craters)
+        clickable: false,
+      });
+      
       craterOverlayRef.current = crater;
+      console.log(`[CRATER CIRCLE] Created at (${craterInfo.lat}, ${craterInfo.lng}) with radius ${craterInfo.size * 10}m`);
     }
   }, [craterInfo]);
 
@@ -308,7 +281,40 @@ const MapContainer = ({ onMapClick, targetLocation, craterInfo }) => {
         left: 0,
         top: 0,
       }}
-    />
+    >
+      {isLaunching && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            zIndex: 1000,
+            pointerEvents: 'all',
+            cursor: 'not-allowed',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            paddingBottom: '40px',
+          }}
+        >
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '16px 24px',
+            borderRadius: '8px',
+            border: '2px solid rgba(255, 102, 0, 0.6)',
+            color: '#ff6600',
+            fontWeight: 'bold',
+            fontSize: '18px',
+            boxShadow: '0 0 20px rgba(255, 102, 0, 0.4)',
+          }}>
+            🚀 ASTEROID IN FLIGHT - MAP LOCKED
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
